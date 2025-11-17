@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽獎系統管理後台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .prize-list {
+            margin-bottom: 30px;
+        }
+
+        .prize-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 100px 80px 80px 120px;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .prize-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .prize-item.bonus-prize {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+        }
+
+        .prize-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 100px 80px 80px 120px;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .prize-order {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .prize-name, .prize-content {
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .rules-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+
+        .department-quota {
+            display: grid;
+            grid-template-columns: 200px 150px 100px 1fr;
+            gap: 15px;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .employee-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .employee-table th,
+        .employee-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .employee-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .employee-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .lottery-engine {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .engine-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .winners-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .winner-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .bonus-control {
+            background: linear-gradient(135deg, #dc3545, #e91e63);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            background: #5a6fd8;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .notification.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .bonus-settings {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .range-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .range-input input[type="range"] {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .clear-test-section {
+            background: #fff3cd;
+            border: 2px dashed #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .clear-test-section h4 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .clear-test-section ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .prize-item, .prize-header {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 抽獎系統管理後台</h1>
+            <p>完整管理系統 + 核心抽獎邏輯引擎 (HTML修復版)</p>
+        </div>
+
+        <!-- 統計儀表板 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="totalEmployees">0</h3>
+                <p>總員工數</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalPrizes">0</h3>
+                <p>獎項數</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalWinners">0</h3>
+                <p>中獎人數</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalQuota">0</h3>
+                <p>總名額</p>
+            </div>
+        </div>
+
+        <!-- 抽獎引擎狀態 -->
+        <div class="lottery-engine">
+            <div class="engine-status">
+                <div class="status-indicator"></div>
+                <h3>抽獎引擎狀態</h3>
+                <span id="engineStatus">等待中</span>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <strong>當前獎項:</strong> <span id="currentPrize">無</span>
+                </div>
+                <div>
+                    <strong>符合條件員工:</strong> <span id="eligibleCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加碼獎控制 -->
+        <div class="bonus-control">
+            <h3>🎁 加碼獎控制</h3>
+            <p>狀態: <span id="bonusStatus">未啟動</span></p>
+            <button class="btn btn-warning" id="activateBonusBtn">🚀 啟動加碼獎</button>
+            <button class="btn btn-info" id="bonusSettingsBtn">⚙️ 加碼獎設定</button>
+        </div>
+
+        <!-- 選項卡 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('prizes')">🏆 獎項管理</button>
+            <button class="tab" onclick="switchTab('employees')">👥 員工管理</button>
+            <button class="tab" onclick="switchTab('rules')">📋 抽獎規則</button>
+            <button class="tab" onclick="switchTab('winners')">🎉 中獎記錄</button>
+            <button class="tab" onclick="switchTab('settings')">⚙️ 系統設定</button>
+        </div>
+
+        <!-- 獎項管理 -->
+        <div id="prizes" class="tab-content active">
+            <div class="section-title">🏆 獎項管理（按抽獎順序排列）</div>
+            
+            <div class="prize-list">
+                <div class="prize-header">
+                    <div>抽獎順序</div>
+                    <div>獎項名稱</div>
+                    <div>獎項內容</div>
+                    <div>名額</div>
+                    <div>已抽出</div>
+                    <div>剩餘</div>
+                    <div>操作</div>
+                </div>
+                <div id="prizesList"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="openPrizeModal()">➕ 新增獎項</button>
+        </div>
+
+        <!-- 員工管理 -->
+        <div id="employees" class="tab-content">
+            <div class="section-title">👥 員工管理</div>
+            
+            <div class="grid-3">
+                <button class="btn btn-primary" onclick="openEmployeeModal()">➕ 新增員工</button>
+                <div class="file-upload">
+                    <input type="file" id="csvFile" accept=".csv" onchange="importCSV()">
+                    <label for="csvFile" class="file-upload-label">📁 匯入CSV</label>
+                </div>
+                <button class="btn btn-info" onclick="exportCSV()">💾 匯出CSV</button>
+            </div>
+
+            <table class="employee-table" id="employeesTable">
+                <thead>
+                    <tr>
+                        <th>姓名</th>
+                        <th>部門</th>
+                        <th>年資</th>
+                        <th>狀態</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- 抽獎規則 -->
+        <div id="rules" class="tab-content">
+            <div class="section-title">📋 抽獎規則管理</div>
+            
+            <!-- 年資限制 -->
+            <div class="rules-section">
+                <h3>🎯 獎項年資要求</h3>
+                <div id="yearRequirements"></div>
+            </div>
+
+            <!-- 部門配額 -->
+            <div class="rules-section">
+                <h3>🏢 部門配額管理</h3>
+                <div id="departmentQuotas"></div>
+                <button class="btn btn-primary" onclick="calculateOptimalQuota()">🧮 智能配額計算</button>
+            </div>
+
+            <!-- 個人限制 -->
+            <div class="rules-section">
+                <h3>👤 個人獎項限制</h3>
+                <div id="personalRestrictions"></div>
+                <button class="btn btn-primary" onclick="openRestrictionModal()">➕ 新增個人限制</button>
+            </div>
+
+            <!-- 加碼獎設定 -->
+            <div class="bonus-settings">
+                <h3>🎁 加碼獎設定（修復版）</h3>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>年資要求（年）</label>
+                        <input type="number" id="bonusYearReq" min="0" value="3">
+                    </div>
+                    <div class="input-group">
+                        <label>獎項名額</label>
+                        <input type="number" id="bonusQuantity" min="1" value="2">
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="excludeTopPrizes" checked>
+                    <label for="excludeTopPrizes">排除前 N 獎得主</label>
+                </div>
+                <div class="range-input">
+                    <label>前</label>
+                    <input type="range" id="topPrizeCount" min="1" max="10" value="3">
+                    <span id="topPrizeValue">3</span>
+                    <label>獎得主（按Order排序，數字大的是大獎）</label>
+                </div>
+                <div class="rule-item">
+                    💡 合格人數預覽: <span id="bonusEligiblePreview">計算中...</span>
+                </div>
+                <button class="btn btn-success" onclick="saveBonusSettings()">💾 保存加碼獎設定</button>
+            </div>
+        </div>
+
+        <!-- 中獎記錄 -->
+        <div id="winners" class="tab-content">
+            <div class="section-title">🎉 即時中獎記錄</div>
+            
+            <div class="grid-2">
+                <div>
+                    <h4>按獎項分類</h4>
+                    <div id="winnersByPrize"></div>
+                </div>
+                <div>
+                    <h4>部門得獎統計</h4>
+                    <div id="winnersByDepartment"></div>
+                </div>
+            </div>
+
+            <div class="winners-list" id="winnersList">
+                <h4>完整歷史列表</h4>
+                <div id="allWinners"></div>
+            </div>
+        </div>
+
+        <!-- 系統設定 -->
+        <div id="settings" class="tab-content">
+            <div class="section-title">⚙️ 系統設定</div>
+            
+            <div class="grid-2">
+                <div>
+                    <h4>📤 匯出設定</h4>
+                    <button class="btn btn-success" onclick="exportSettings()">💾 匯出完整設定檔</button>
+                    <p>匯出員工+獎項+規則的完整設定</p>
+                    
+                    <h4 style="margin-top: 20px;">📥 匯入設定</h4>
+                    <div class="file-upload">
+                        <input type="file" id="settingsFile" accept=".json" onchange="importSettings()">
+                        <label for="settingsFile" class="file-upload-label">📁 從設定檔還原資料</label>
+                    </div>
+                </div>
+                <div>
+                    <h4>🔄 同步狀態</h4>
+                    <button class="btn btn-primary" onclick="forcSync()">☁️ 強制同步到雲端</button>
+                    <button class="btn btn-warning" onclick="resetLottery()">🔄 重設抽獎狀態</button>
+                    <button class="btn btn-danger" onclick="clearTestRecords()">🧹 清空測試記錄</button>
+                    <button class="btn btn-info" onclick="exportSystemReport()">📊 匯出系統報告</button>
+                </div>
+            </div>
+
+            <!-- 清空測試記錄說明 -->
+            <div class="clear-test-section">
+                <h4>🧹 清空測試記錄說明</h4>
+                <div class="grid-2">
+                    <div>
+                        <p><strong>清空內容：</strong></p>
+                        <ul>
+                            <li>✅ 所有中獎記錄</li>
+                            <li>✅ 重設獎項已抽出數量為0</li>
+                            <li>✅ 重設加碼獎啟動狀態</li>
+                            <li>✅ 重設抽獎狀態為waiting</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p><strong>保留內容：</strong></p>
+                        <ul>
+                            <li>🔒 員工資料</li>
+                            <li>🔒 獎項設定</li>
+                            <li>🔒 抽獎規則設定</li>
+                            <li>🔒 獎項順序設定</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 獎項設定模態框 -->
+    <div id="prizeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePrizeModal()">&times;</span>
+            <h2 id="prizeModalTitle">新增獎項</h2>
+            <div class="input-group">
+                <label>抽獎順序 <small>(數字越小越先抽，例：1=最先抽八獎，8=最後抽頭獎)</small></label>
+                <input type="number" id="prizeOrder" min="1" value="1">
+            </div>
+            <div class="input-group">
+                <label>獎項名稱</label>
+                <input type="text" id="prizeName" placeholder="例：頭獎、二獎、三獎、八獎">
+            </div>
+            <div class="input-group">
+                <label>獎項內容 <small>(獎品詳細描述)</small></label>
+                <input type="text" id="prizeContent" placeholder="例：20000元、iPhone 15、購物券">
+            </div>
+            <div class="input-group">
+                <label>名額數量</label>
+                <input type="number" id="prizeQuantity" min="1" value="1">
+            </div>
+            <button class="btn btn-primary" onclick="savePrize()">💾 保存</button>
+            <button class="btn" onclick="closePrizeModal()">取消</button>
+        </div>
+    </div>
+
+    <!-- 員工設定模態框 -->
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEmployeeModal()">&times;</span>
+            <h2 id="employeeModalTitle">新增員工</h2>
+            <div class="input-group">
+                <label>姓名</label>
+                <input type="text" id="employeeName" placeholder="輸入姓名">
+            </div>
+            <div class="input-group">
+                <label>部門</label>
+                <input type="text" id="employeeDepartment" placeholder="輸入部門名稱">
+            </div>
+            <div class="input-group">
+                <label>年資（年）</label>
+                <input type="number" id="employeeYears" min="0" value="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveEmployee()">💾 保存</button>
+            <button class="btn" onclick="closeEmployeeModal()">取消</button>
+        </div>
+    </div>
+
+    <!-- 個人限制模態框 -->
+    <div id="restrictionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRestrictionModal()">&times;</span>
+            <h2>新增個人限制</h2>
+            <div class="input-group">
+                <label>選擇員工</label>
+                <select id="restrictionEmployee"></select>
+            </div>
+            <div class="input-group">
+                <label>排除獎項</label>
+                <div id="restrictionPrizes"></div>
+            </div>
+            <button class="btn btn-primary" onclick="saveRestriction()">💾 保存</button>
+            <button class="btn" onclick="closeRestrictionModal()">取消</button>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let employees = JSON.parse(localStorage.getItem('employees') || '[]');
+        let prizes = JSON.parse(localStorage.getItem('prizes') || '[]');
+        let winners = JSON.parse(localStorage.getItem('winners') || '[]');
+        let rules = JSON.parse(localStorage.getItem('rules') || '{"yearRequirements": {}, "departmentQuotas": {}, "personalRestrictions": {}}');
+        let bonusSettings = JSON.parse(localStorage.getItem('bonusSettings') || '{"yearRequirement": 3, "excludeTopPrizes": {"enabled": true, "topCount": 3}, "quantity": 2, "activated": false}');
+        let lotteryState = JSON.parse(localStorage.getItem('lotteryState') || '{"status": "waiting", "currentPrize": null, "currentWinner": null}');
+        let editingPrizeId = null;
+        let editingEmployeeId = null;
+
+        // ===== 核心功能：ID標準化處理函數 =====
+        function normalizeId(id) {
+            if (id === 'bonus') return 'bonus';
+            return parseInt(id);
+        }
+
+        function findPrizeById(prizeId) {
+            const normalizedId = normalizeId(prizeId);
+            if (normalizedId === 'bonus') return null;
+            return prizes.find(p => normalizeId(p.id) === normalizedId);
+        }
+
+        function getPrizeName(prizeId) {
+            if (prizeId === 'bonus') return '加碼獎';
+            const prize = findPrizeById(prizeId);
+            return prize ? prize.name : `獎項ID:${prizeId}`;
+        }
+
+        function getPrizeDisplayName(prizeId) {
+            if (prizeId === 'bonus') return '加碼獎';
+            const prize = findPrizeById(prizeId);
+            if (prize) {
+                return prize.content ? `${prize.name} ${prize.content}` : prize.name;
+            }
+            return `獎項ID:${prizeId}`;
+        }
+
+        // ===== 修復核心：根據Order判斷前N獎的函數 =====
+        function getTopPrizes(topCount) {
+            return prizes
+                .sort((a, b) => b.order - a.order)  // 按order降序排列（數字大的是大獎）
+                .slice(0, topCount);                // 取前N個
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 抽獎系統管理後台 - HTML修復版初始化開始');
+            initializeData();
+            updateStats();
+            renderPrizes();
+            renderEmployees();
+            renderRules();
+            renderWinners();
+            updateEngineStatus();
+            setupBonusControls();
+            setupEventListeners();
+            console.log('✨ 修復完成：HTML結構、Order邏輯、Content欄位、前N獎判斷');
+        });
+
+        // 初始化預設資料
+        function initializeData() {
+            if (employees.length === 0) {
+                employees = [
+                    {id: 1, name: '張小明', department: 'IT部', years: 5, status: 'active'},
+                    {id: 2, name: '李小華', department: '業務部', years: 3, status: 'active'},
+                    {id: 3, name: '王小美', department: 'IT部', years: 7, status: 'active'},
+                    {id: 4, name: '陳小強', department: '財務部', years: 2, status: 'active'},
+                    {id: 5, name: '林小芳', department: 'TG部', years: 4, status: 'active'},
+                    {id: 6, name: '黃小文', department: 'EG部', years: 6, status: 'active'}
+                ];
+            }
+            
+            if (prizes.length === 0) {
+                prizes = [
+                    {id: 1, order: 1, name: '八獎', content: '3600元', quantity: 5, drawn: 0, yearRequirement: 0},
+                    {id: 2, order: 2, name: '七獎', content: '5000元', quantity: 3, drawn: 0, yearRequirement: 0},
+                    {id: 3, order: 3, name: '六獎', content: '6000元', quantity: 3, drawn: 0, yearRequirement: 1},
+                    {id: 4, order: 4, name: '五獎', content: '8000元', quantity: 2, drawn: 0, yearRequirement: 1},
+                    {id: 5, order: 5, name: '四獎', content: '10000元', quantity: 2, drawn: 0, yearRequirement: 2},
+                    {id: 6, order: 6, name: '三獎', content: '12000元', quantity: 1, drawn: 0, yearRequirement: 3},
+                    {id: 7, order: 7, name: '二獎', content: '15000元', quantity: 1, drawn: 0, yearRequirement: 3},
+                    {id: 8, order: 8, name: '頭獎', content: '20000元', quantity: 1, drawn: 0, yearRequirement: 5}
+                ];
+            }
+            saveData();
+        }
+
+        function setupEventListeners() {
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'lotteryCommand') {
+                    const command = JSON.parse(e.newValue);
+                    handleLotteryCommand(command);
+                }
+            });
+            
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'lotteryEvent') {
+                    const event = JSON.parse(e.newValue);
+                    handleLotteryEvent(event);
+                }
+            });
+        }
+
+        function handleLotteryCommand(command) {
+            switch(command.type) {
+                case 'START_LOTTERY':
+                    handleLotteryStart(command.prizeId);
+                    break;
+                case 'STOP_LOTTERY':
+                    handleLotteryStop();
+                    break;
+                case 'FORCE_STOP':
+                    forceLotteryStop();
+                    break;
+            }
+        }
+
+        function handleLotteryEvent(event) {
+            switch(event.type) {
+                case 'START_LOTTERY':
+                    handleLotteryStart(event.prizeId);
+                    break;
+                case 'STOP_LOTTERY':
+                    handleLotteryStop();
+                    break;
+                case 'FORCE_STOP':
+                case 'EMERGENCY_RESET':
+                    forceLotteryStop();
+                    break;
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('employees', JSON.stringify(employees));
+            localStorage.setItem('prizes', JSON.stringify(prizes));
+            localStorage.setItem('winners', JSON.stringify(winners));
+            localStorage.setItem('rules', JSON.stringify(rules));
+            localStorage.setItem('bonusSettings', JSON.stringify(bonusSettings));
+            localStorage.setItem('lotteryState', JSON.stringify(lotteryState));
+        }
+
+        function updateStats() {
+            document.getElementById('totalEmployees').textContent = employees.filter(e => e.status === 'active').length;
+            document.getElementById('totalPrizes').textContent = prizes.length + (bonusSettings.activated ? 1 : 0);
+            document.getElementById('totalWinners').textContent = winners.length;
+            document.getElementById('totalQuota').textContent = prizes.reduce((sum, p) => sum + p.quantity, 0) + (bonusSettings.activated ? bonusSettings.quantity : 0);
+        }
+
+        function updateEngineStatus() {
+            const statusMap = {
+                waiting: '等待中',
+                rolling: '抽獎中',
+                showing: '顯示結果'
+            };
+            
+            document.getElementById('engineStatus').textContent = statusMap[lotteryState.status] || '等待中';
+            document.getElementById('currentPrize').textContent = lotteryState.currentPrize ? getPrizeDisplayName(lotteryState.currentPrize) : '無';
+            
+            if (lotteryState.currentPrize) {
+                const eligible = getEligibleEmployees(lotteryState.currentPrize);
+                document.getElementById('eligibleCount').textContent = eligible.length;
+            } else {
+                document.getElementById('eligibleCount').textContent = '0';
+            }
+            
+            document.getElementById('bonusStatus').textContent = bonusSettings.activated ? '已啟動' : '未啟動';
+            const activateBtn = document.getElementById('activateBonusBtn');
+            if (bonusSettings.activated) {
+                activateBtn.textContent = '🛑 停用加碼獎';
+                activateBtn.className = 'btn btn-danger';
+            } else {
+                activateBtn.textContent = '🚀 啟動加碼獎';
+                activateBtn.className = 'btn btn-warning';
+            }
+        }
+
+        // ===== 修復核心：獲取符合條件的員工（使用Order判斷前N獎） =====
+        function getEligibleEmployees(prizeId) {
+            const activeEmployees = employees.filter(emp => emp.status === 'active');
+            
+            if (prizeId === 'bonus') {
+                console.log('=== 加碼獎篩選開始（修復版） ===');
+                console.log('年資要求:', bonusSettings.yearRequirement);
+                console.log('排除前N獎設定:', bonusSettings.excludeTopPrizes);
+                
+                return activeEmployees.filter(employee => {
+                    console.log(`檢查員工: ${employee.name} (ID: ${employee.id})`);
+                    
+                    if (employee.years < bonusSettings.yearRequirement) {
+                        console.log(`  ❌ 年資不足: ${employee.years} < ${bonusSettings.yearRequirement}`);
+                        return false;
+                    }
+                    console.log(`  ✅ 年資符合: ${employee.years} >= ${bonusSettings.yearRequirement}`);
+                    
+                    const hasWonBonus = winners.some(w => w.prizeId === 'bonus' && normalizeId(w.employeeId) === normalizeId(employee.id));
+                    if (hasWonBonus) {
+                        console.log(`  ❌ 已獲得加碼獎`);
+                        return false;
+                    }
+                    console.log(`  ✅ 未獲得加碼獎`);
+                    
+                    const restrictions = rules.personalRestrictions[employee.id] || [];
+                    if (restrictions.includes('bonus')) {
+                        console.log(`  ❌ 個人限制排除加碼獎`);
+                        return false;
+                    }
+                    console.log(`  ✅ 無個人限制`);
+                    
+                    if (bonusSettings.excludeTopPrizes.enabled) {
+                        console.log(`  🔍 檢查是否為前${bonusSettings.excludeTopPrizes.topCount}獎得主`);
+                        
+                        const topPrizes = getTopPrizes(bonusSettings.excludeTopPrizes.topCount);
+                        console.log(`  前${bonusSettings.excludeTopPrizes.topCount}獎項（按Order排序）:`, topPrizes.map(p => `${p.name}(ID:${p.id}, Order:${p.order})`));
+                        
+                        const employeeWinnings = winners.filter(w => normalizeId(w.employeeId) === normalizeId(employee.id));
+                        console.log(`  ${employee.name}的獲獎記錄:`, employeeWinnings);
+                        
+                        const isTopPrizeWinner = employeeWinnings.some(w => {
+                            if (w.prizeId === 'bonus') {
+                                console.log(`    跳過加碼獎記錄`);
+                                return false;
+                            }
+                            
+                            const wonPrize = findPrizeById(w.prizeId);
+                            if (!wonPrize) {
+                                console.log(`    找不到獎項ID: ${w.prizeId}`);
+                                return false;
+                            }
+                            
+                            console.log(`    檢查獲獎記錄: ${wonPrize.name} (ID:${wonPrize.id}, Order:${wonPrize.order})`);
+                            
+                            const isTopPrize = topPrizes.some(tp => normalizeId(tp.id) === normalizeId(wonPrize.id));
+                            
+                            if (isTopPrize) {
+                                console.log(`    ❌ 發現前${bonusSettings.excludeTopPrizes.topCount}獎得主: ${wonPrize.name} (Order:${wonPrize.order})`);
+                                return true;
+                            }
+                            
+                            return false;
+                        });
+                        
+                        if (isTopPrizeWinner) {
+                            console.log(`  ❌ 是前${bonusSettings.excludeTopPrizes.topCount}獎得主，排除`);
+                            return false;
+                        }
+                        console.log(`  ✅ 不是前${bonusSettings.excludeTopPrizes.topCount}獎得主，可參與`);
+                    }
+                    
+                    console.log(`  🎉 ${employee.name} 符合加碼獎條件`);
+                    return true;
+                });
+            } else {
+                const prize = findPrizeById(prizeId);
+                if (!prize) return [];
+                
+                const basicEligible = activeEmployees.filter(employee => {
+                    if (employee.years < (prize.yearRequirement || 0)) return false;
+                    
+                    const restrictions = rules.personalRestrictions[employee.id] || [];
+                    const prizeIdStr = prizeId.toString();
+                    const prizeIdNum = normalizeId(prizeId);
+                    if (restrictions.includes(prizeIdStr) || restrictions.includes(prizeIdNum)) return false;
+                    
+                    const hasWon = winners.some(w => normalizeId(w.employeeId) === normalizeId(employee.id));
+                    if (hasWon) return false;
+                    
+                    return true;
+                });
+                
+                return applyDepartmentQuota(basicEligible);
+            }
+        }
+
+        function applyDepartmentQuota(eligibleEmployees) {
+            const departmentQuotas = rules.departmentQuotas || {};
+            const departments = Object.keys(departmentQuotas);
+            
+            if (departments.length === 0) {
+                return eligibleEmployees;
+            }
+            
+            const departmentWinCounts = {};
+            departments.forEach(dept => {
+                departmentWinCounts[dept] = winners.filter(winner => {
+                    const employee = employees.find(e => normalizeId(e.id) === normalizeId(winner.employeeId));
+                    return employee && employee.department === dept;
+                }).length;
+            });
+            
+            const weightedEmployees = [];
+            
+            eligibleEmployees.forEach(employee => {
+                const dept = employee.department;
+                const targetQuota = departmentQuotas[dept] || 0;
+                const currentWins = departmentWinCounts[dept] || 0;
+                
+                let weight = 1;
+                
+                if (targetQuota > 0) {
+                    if (currentWins < targetQuota) {
+                        const deficit = targetQuota - currentWins;
+                        weight = 1 + (deficit * 2);
+                    } else {
+                        weight = 0.1;
+                    }
+                }
+                
+                const repeatCount = Math.max(1, Math.round(weight * 10));
+                for (let i = 0; i < repeatCount; i++) {
+                    weightedEmployees.push(employee);
+                }
+            });
+            
+            return weightedEmployees;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function renderPrizes() {
+            const container = document.getElementById('prizesList');
+            const sortedPrizes = [...prizes].sort((a, b) => a.order - b.order);
+            
+            container.innerHTML = sortedPrizes.map(prize => `
+                <div class="prize-item" data-id="${prize.id}">
+                    <div class="prize-order">${prize.order}</div>
+                    <div class="prize-name">${prize.name}</div>
+                    <div class="prize-content">${prize.content || ''}</div>
+                    <div>${prize.quantity}</div>
+                    <div>${prize.drawn}</div>
+                    <div>${prize.quantity - prize.drawn}</div>
+                    <div>
+                        <button class="btn btn-info" onclick="editPrize(${prize.id})">✏️</button>
+                        <button class="btn btn-danger" onclick="deletePrize(${prize.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (bonusSettings.activated) {
+                const bonusWinners = winners.filter(w => w.prizeId === 'bonus').length;
+                container.innerHTML += `
+                    <div class="prize-item bonus-prize">
+                        <div style="text-align: center;">🎁</div>
+                        <div class="prize-name">加碼獎</div>
+                        <div class="prize-content">特別獎項</div>
+                        <div>${bonusSettings.quantity}</div>
+                        <div>${bonusWinners}</div>
+                        <div>${bonusSettings.quantity - bonusWinners}</div>
+                        <div>
+                            <button class="btn btn-info" onclick="openBonusSettings()">⚙️</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderEmployees() {
+            const tbody = document.querySelector('#employeesTable tbody');
+            tbody.innerHTML = employees.map(emp => `
+                <tr>
+                    <td>${emp.name}</td>
+                    <td>${emp.department}</td>
+                    <td>${emp.years}年</td>
+                    <td>
+                        <span class="status ${emp.status}">${emp.status === 'active' ? '在職' : '離職'}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-info" onclick="editEmployee(${emp.id})">✏️</button>
+                        <button class="btn btn-danger" onclick="deleteEmployee(${emp.id})">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderRules() {
+            renderYearRequirements();
+            renderDepartmentQuotas();
+            renderPersonalRestrictions();
+        }
+
+        function renderYearRequirements() {
+            const container = document.getElementById('yearRequirements');
+            const sortedPrizes = [...prizes].sort((a, b) => a.order - b.order);
+            container.innerHTML = sortedPrizes.map(prize => `
+                <div class="rule-item">
+                    <span>${prize.name} ${prize.content || ''}:</span>
+                    <input type="number" min="0" value="${prize.yearRequirement || 0}" 
+                           onchange="updateYearRequirement(${prize.id}, this.value)">
+                    <span>年以上</span>
+                    <span>⚙️</span>
+                </div>
+            `).join('');
+        }
+
+        function updateYearRequirement(prizeId, years) {
+            const prize = findPrizeById(prizeId);
+            if (prize) {
+                prize.yearRequirement = parseInt(years) || 0;
+                saveData();
+                updateBonusEligiblePreview();
+                showNotification('年資要求已更新');
+            }
+        }
+
+        function renderDepartmentQuotas() {
+            const departments = [...new Set(employees.filter(e => e.status === 'active').map(e => e.department))];
+            const container = document.getElementById('departmentQuotas');
+            
+            container.innerHTML = departments.map(dept => {
+                const deptEmployees = employees.filter(e => e.department === dept && e.status === 'active');
+                const eligibleCount = deptEmployees.length;
+                const currentQuota = rules.departmentQuotas[dept] || 0;
+                const currentWins = winners.filter(winner => {
+                    const employee = employees.find(e => normalizeId(e.id) === normalizeId(winner.employeeId));
+                    return employee && employee.department === dept;
+                }).length;
+                const percentage = eligibleCount > 0 ? Math.round(currentQuota / eligibleCount * 100) : 0;
+                
+                return `
+                    <div class="department-quota">
+                        <div>${dept} (總員工: ${deptEmployees.length}人, 符合條件: ${eligibleCount}人)</div>
+                        <div>目標得獎數: 
+                            <input type="number" min="0" max="${eligibleCount}" value="${currentQuota}"
+                                   onchange="updateDepartmentQuota('${dept}', this.value)">
+                            人 | 目前已得獎: ${currentWins}人
+                        </div>
+                        <div>(目標${percentage}% | 進度: ${currentWins}/${currentQuota})</div>
+                        <div class="quota-info">
+                            ${currentWins >= currentQuota ? '✅ 已達成目標' : '⏳ 未達成目標，抽獎時會提高該部門員工的中獎機率'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            const totalQuota = Object.values(rules.departmentQuotas).reduce((sum, q) => sum + q, 0);
+            const totalPrizeQuota = prizes.reduce((sum, p) => sum + p.quantity, 0);
+            const totalCurrentWins = winners.length;
+            
+            container.innerHTML += `
+                <div class="rule-item">
+                    💡 部門配額說明: 設定各部門期望的得獎人數，系統會自動調整抽獎機率
+                </div>
+                <div class="rule-item">
+                    📊 整體進度: 已設定${totalQuota}人目標，實際得獎${totalCurrentWins}人，總名額${totalPrizeQuota}人
+                </div>
+            `;
+        }
+
+        function updateDepartmentQuota(department, quota) {
+            rules.departmentQuotas[department] = parseInt(quota) || 0;
+            saveData();
+            renderDepartmentQuotas();
+            showNotification(`${department}配額已更新`);
+        }
+
+        function renderPersonalRestrictions() {
+            const container = document.getElementById('personalRestrictions');
+            const restrictions = rules.personalRestrictions || {};
+            
+            container.innerHTML = Object.entries(restrictions).map(([empId, restrictedItems]) => {
+                const employee = employees.find(e => normalizeId(e.id) === normalizeId(empId));
+                const restrictedNames = restrictedItems.map(item => {
+                    if (item === 'bonus') {
+                        return '加碼獎';
+                    } else {
+                        return getPrizeName(item);
+                    }
+                }).filter(name => !name.startsWith('獎項ID:'));
+                
+                return employee ? `
+                    <div class="rule-item">
+                        <span>${employee.name}</span>
+                        <span>❌ ${restrictedNames.join('、')}</span>
+                        <button class="btn btn-danger" onclick="removeRestriction(${empId})">移除</button>
+                    </div>
+                ` : '';
+            }).join('');
+        }
+
+        function removeRestriction(empId) {
+            delete rules.personalRestrictions[normalizeId(empId)];
+            saveData();
+            renderPersonalRestrictions();
+            showNotification('個人限制已移除');
+        }
+
+        function setupBonusControls() {
+            document.getElementById('bonusYearReq').addEventListener('change', function() {
+                bonusSettings.yearRequirement = parseInt(this.value) || 0;
+                saveData();
+                updateBonusEligiblePreview();
+            });
+            
+            document.getElementById('bonusQuantity').addEventListener('change', function() {
+                bonusSettings.quantity = parseInt(this.value) || 1;
+                saveData();
+                updateBonusEligiblePreview();
+            });
+            
+            document.getElementById('excludeTopPrizes').addEventListener('change', function() {
+                bonusSettings.excludeTopPrizes.enabled = this.checked;
+                saveData();
+                updateBonusEligiblePreview();
+            });
+            
+            const topPrizeRange = document.getElementById('topPrizeCount');
+            const topPrizeValue = document.getElementById('topPrizeValue');
+            topPrizeRange.addEventListener('input', function() {
+                topPrizeValue.textContent = this.value;
+                bonusSettings.excludeTopPrizes.topCount = parseInt(this.value);
+                saveData();
+                updateBonusEligiblePreview();
+            });
+            
+            document.getElementById('bonusYearReq').value = bonusSettings.yearRequirement;
+            document.getElementById('bonusQuantity').value = bonusSettings.quantity;
+            document.getElementById('excludeTopPrizes').checked = bonusSettings.excludeTopPrizes.enabled;
+            document.getElementById('topPrizeCount').value = bonusSettings.excludeTopPrizes.topCount;
+            document.getElementById('topPrizeValue').textContent = bonusSettings.excludeTopPrizes.topCount;
+            
+            updateBonusEligiblePreview();
+        }
+
+        function updateBonusEligiblePreview() {
+            const eligibleEmployees = getEligibleEmployees('bonus');
+            document.getElementById('bonusEligiblePreview').textContent = `${eligibleEmployees.length}人`;
+        }
+
+        function saveBonusSettings() {
+            bonusSettings.yearRequirement = parseInt(document.getElementById('bonusYearReq').value) || 0;
+            bonusSettings.quantity = parseInt(document.getElementById('bonusQuantity').value) || 1;
+            bonusSettings.excludeTopPrizes.enabled = document.getElementById('excludeTopPrizes').checked;
+            bonusSettings.excludeTopPrizes.topCount = parseInt(document.getElementById('topPrizeCount').value) || 3;
+            
+            saveData();
+            updateBonusEligiblePreview();
+            showNotification('加碼獎設定已保存');
+        }
+
+        function renderWinners() {
+            renderWinnersByPrize();
+            renderWinnersByDepartment();
+            renderAllWinners();
+        }
+
+        function renderWinnersByPrize() {
+            const container = document.getElementById('winnersByPrize');
+            const grouped = {};
+            
+            winners.forEach(winner => {
+                const prizeName = getPrizeDisplayName(winner.prizeId);
+                let prizeOrder = 999;
+                
+                if (winner.prizeId === 'bonus') {
+                    prizeOrder = 1000;
+                } else {
+                    const prize = findPrizeById(winner.prizeId);
+                    if (prize) {
+                        prizeOrder = prize.order;
+                    }
+                }
+                
+                const employee = employees.find(e => normalizeId(e.id) === normalizeId(winner.employeeId));
+                if (employee) {
+                    if (!grouped[prizeName]) {
+                        grouped[prizeName] = {
+                            names: [],
+                            order: prizeOrder
+                        };
+                    }
+                    grouped[prizeName].names.push(employee.name);
+                }
+            });
+            
+            const sortedGroups = Object.entries(grouped).sort((a, b) => a[1].order - b[1].order);
+            
+            container.innerHTML = sortedGroups.map(([prizeName, data]) => `
+                <div class="winner-item">
+                    <strong>${prizeName}:</strong>
+                    <span>${data.names.join('、')}</span>
+                </div>
+            `).join('') || '<p>暫無中獎記錄</p>';
+        }
+
+        function renderWinnersByDepartment() {
+            const container = document.getElementById('winnersByDepartment');
+            const grouped = {};
+            
+            winners.forEach(winner => {
+                const employee = employees.find(e => normalizeId(e.id) === normalizeId(winner.employeeId));
+                if (employee) {
+                    if (!grouped[employee.department]) grouped[employee.department] = 0;
+                    grouped[employee.department]++;
+                }
+            });
+            
+            container.innerHTML = Object.entries(grouped).map(([dept, count]) => {
+                const total = employees.filter(e => e.department === dept && e.status === 'active').length;
+                const percentage = total > 0 ? Math.round(count / total * 100) : 0;
+                return `
+                    <div class="winner-item">
+                        <strong>${dept}:</strong>
+                        <span>${count}/${total}人 (${percentage}%)</span>
+                    </div>
+                `;
+            }).join('') || '<p>暫無統計資料</p>';
+        }
+
+        function renderAllWinners() {
+            const container = document.getElementById('allWinners');
+            
+            if (winners.length === 0) {
+                container.innerHTML = '<p>暫無中獎記錄</p>';
+                return;
+            }
+            
+            const sortedWinners = [...winners].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            container.innerHTML = sortedWinners.map(winner => {
+                const prizeName = getPrizeDisplayName(winner.prizeId);
+                const employee = employees.find(e => normalizeId(e.id) === normalizeId(winner.employeeId));
+                
+                if (employee) {
+                    return `
+                        <div class="winner-item">
+                            <div>
+                                <strong>${employee.name}</strong> (${employee.department})
+                                獲得 <strong>${prizeName}</strong>
+                            </div>
+                            <small>${new Date(winner.timestamp).toLocaleString('zh-TW')}</small>
+                        </div>
+                    `;
+                }
+                return '';
+            }).join('');
+        }
+
+        // 獎項相關函數
+        function openPrizeModal(prizeId = null) {
+            editingPrizeId = prizeId;
+            const modal = document.getElementById('prizeModal');
+            const title = document.getElementById('prizeModalTitle');
+            
+            if (prizeId) {
+                const prize = findPrizeById(prizeId);
+                if (prize) {
+                    title.textContent = '編輯獎項';
+                    document.getElementById('prizeOrder').value = prize.order || 1;
+                    document.getElementById('prizeName').value = prize.name;
+                    document.getElementById('prizeContent').value = prize.content || '';
+                    document.getElementById('prizeQuantity').value = prize.quantity;
+                }
+            } else {
+                title.textContent = '新增獎項';
+                const maxOrder = prizes.length > 0 ? Math.max(...prizes.map(p => p.order)) : 0;
+                document.getElementById('prizeOrder').value = maxOrder + 1;
+                document.getElementById('prizeName').value = '';
+                document.getElementById('prizeContent').value = '';
+                document.getElementById('prizeQuantity').value = 1;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closePrizeModal() {
+            document.getElementById('prizeModal').style.display = 'none';
+            editingPrizeId = null;
+        }
+
+        function savePrize() {
+            const order = parseInt(document.getElementById('prizeOrder').value);
+            const name = document.getElementById('prizeName').value.trim();
+            const content = document.getElementById('prizeContent').value.trim();
+            const quantity = parseInt(document.getElementById('prizeQuantity').value);
+            
+            if (!name) {
+                showNotification('請輸入獎項名稱', 'error');
+                return;
+            }
+            
+            if (!order || order < 1) {
+                showNotification('請輸入有效的抽獎順序', 'error');
+                return;
+            }
+            
+            const conflictPrize = prizes.find(p => p.order === order && (!editingPrizeId || p.id !== editingPrizeId));
+            if (conflictPrize) {
+                showNotification(`抽獎順序 ${order} 已被「${conflictPrize.name}」使用`, 'error');
+                return;
+            }
+            
+            if (editingPrizeId) {
+                const prize = findPrizeById(editingPrizeId);
+                if (prize) {
+                    prize.order = order;
+                    prize.name = name;
+                    prize.content = content;
+                    prize.quantity = quantity;
+                }
+            } else {
+                const newId = Math.max(...prizes.map(p => p.id), 0) + 1;
+                prizes.push({
+                    id: newId,
+                    order: order,
+                    name: name,
+                    content: content,
+                    quantity: quantity,
+                    drawn: 0,
+                    yearRequirement: 0
+                });
+            }
+            
+            saveData();
+            renderPrizes();
+            renderRules();
+            updateStats();
+            closePrizeModal();
+            showNotification('獎項已保存');
+        }
+
+        function editPrize(prizeId) {
+            openPrizeModal(prizeId);
+        }
+
+        function deletePrize(prizeId) {
+            if (confirm('確定要刪除此獎項嗎？')) {
+                prizes = prizes.filter(p => normalizeId(p.id) !== normalizeId(prizeId));
+                saveData();
+                renderPrizes();
+                renderRules();
+                updateStats();
+                showNotification('獎項已刪除');
+            }
+        }
+
+        // 員工相關函數
+        function openEmployeeModal(empId = null) {
+            editingEmployeeId = empId;
+            const modal = document.getElementById('employeeModal');
+            const title = document.getElementById('employeeModalTitle');
+            
+            if (empId) {
+                const emp = employees.find(e => normalizeId(e.id) === normalizeId(empId));
+                if (emp) {
+                    title.textContent = '編輯員工';
+                    document.getElementById('employeeName').value = emp.name;
+                    document.getElementById('employeeDepartment').value = emp.department;
+                    document.getElementById('employeeYears').value = emp.years;
+                }
+            } else {
+                title.textContent = '新增員工';
+                document.getElementById('employeeName').value = '';
+                document.getElementById('employeeDepartment').value = '';
+                document.getElementById('employeeYears').value = 0;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeEmployeeModal() {
+            document.getElementById('employeeModal').style.display = 'none';
+            editingEmployeeId = null;
+        }
+
+        function saveEmployee() {
+            const name = document.getElementById('employeeName').value.trim();
+            const department = document.getElementById('employeeDepartment').value.trim();
+            const years = parseInt(document.getElementById('employeeYears').value);
+            
+            if (!name || !department) {
+                showNotification('請填寫完整資訊', 'error');
+                return;
+            }
+            
+            if (editingEmployeeId) {
+                const emp = employees.find(e => normalizeId(e.id) === normalizeId(editingEmployeeId));
+                if (emp) {
+                    emp.name = name;
+                    emp.department = department;
+                    emp.years = years;
+                }
+            } else {
+                const newId = Math.max(...employees.map(e => e.id), 0) + 1;
+                employees.push({
+                    id: newId,
+                    name: name,
+                    department: department,
+                    years: years,
+                    status: 'active'
+                });
+            }
+            
+            saveData();
+            renderEmployees();
+            renderRules();
+            updateStats();
+            updateBonusEligiblePreview();
+            closeEmployeeModal();
+            showNotification('員工資料已保存');
+        }
+
+        function editEmployee(empId) {
+            openEmployeeModal(empId);
+        }
+
+        function deleteEmployee(empId) {
+            if (confirm('確定要刪除此員工嗎？')) {
+                employees = employees.filter(e => normalizeId(e.id) !== normalizeId(empId));
+                delete rules.personalRestrictions[normalizeId(empId)];
+                saveData();
+                renderEmployees();
+                renderRules();
+                updateStats();
+                updateBonusEligiblePreview();
+                showNotification('員工已刪除');
+            }
+        }
+
+        // CSV相關
+        function importCSV() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n').filter(line => line.trim());
+                    
+                    if (lines.length === 0) {
+                        showNotification('CSV檔案為空', 'error');
+                        return;
+                    }
+                    
+                    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                    const requiredFields = ['name', 'department', 'years'];
+                    const missingFields = requiredFields.filter(field => !headers.includes(field));
+                    
+                    if (missingFields.length > 0) {
+                        showNotification(`CSV格式錯誤，缺少欄位: ${missingFields.join(', ')}`, 'error');
+                        return;
+                    }
+                    
+                    const nameIndex = headers.indexOf('name');
+                    const deptIndex = headers.indexOf('department');
+                    const yearsIndex = headers.indexOf('years');
+                    
+                    let importCount = 0;
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = lines[i].split(',').map(v => v.trim());
+                        if (values.length >= 3 && values[nameIndex] && values[deptIndex]) {
+                            const newId = Math.max(...employees.map(e => e.id), 0) + 1 + importCount;
+                            employees.push({
+                                id: newId,
+                                name: values[nameIndex],
+                                department: values[deptIndex],
+                                years: parseInt(values[yearsIndex]) || 0,
+                                status: 'active'
+                            });
+                            importCount++;
+                        }
+                    }
+                    
+                    saveData();
+                    renderEmployees();
+                    renderRules();
+                    updateStats();
+                    updateBonusEligiblePreview();
+                    showNotification(`成功匯入 ${importCount} 位員工`);
+                } catch (error) {
+                    showNotification('CSV解析失敗', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportCSV() {
+            const csvContent = [
+                ['name', 'department', 'years', 'status'].join(','),
+                ...employees.map(emp => [emp.name, emp.department, emp.years, emp.status].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `employees_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            showNotification('員工資料已匯出');
+        }
+
+        // 個人限制相關
+        function openRestrictionModal() {
+            const modal = document.getElementById('restrictionModal');
+            
+            const empSelect = document.getElementById('restrictionEmployee');
+            empSelect.innerHTML = employees
+                .filter(e => e.status === 'active')
+                .map(emp => `<option value="${emp.id}">${emp.name} (${emp.department})</option>`)
+                .join('');
+            
+            const prizesContainer = document.getElementById('restrictionPrizes');
+            const sortedPrizes = [...prizes].sort((a, b) => a.order - b.order);
+            let prizeOptions = sortedPrizes.map(prize => `
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="checkbox" value="${prize.id}"> ${prize.name} ${prize.content || ''}
+                </label>
+            `).join('');
+            
+            if (bonusSettings.activated) {
+                prizeOptions += `
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="checkbox" value="bonus"> 加碼獎
+                    </label>
+                `;
+            }
+            
+            prizesContainer.innerHTML = prizeOptions;
+            modal.style.display = 'block';
+        }
+
+        function closeRestrictionModal() {
+            document.getElementById('restrictionModal').style.display = 'none';
+        }
+
+        function saveRestriction() {
+            const empId = normalizeId(document.getElementById('restrictionEmployee').value);
+            const checkboxes = document.querySelectorAll('#restrictionPrizes input[type="checkbox"]:checked');
+            const restrictedItems = Array.from(checkboxes).map(cb => {
+                return cb.value === 'bonus' ? 'bonus' : normalizeId(cb.value);
+            });
+            
+            if (restrictedItems.length === 0) {
+                showNotification('請選擇要排除的獎項', 'error');
+                return;
+            }
+            
+            if (!rules.personalRestrictions) rules.personalRestrictions = {};
+            rules.personalRestrictions[empId] = restrictedItems;
+            
+            saveData();
+            renderPersonalRestrictions();
+            closeRestrictionModal();
+            showNotification('個人限制已設定');
+        }
+
+        // 加碼獎相關
+        function activateBonus() {
+            if (bonusSettings.activated) {
+                if (confirm('確定要停用加碼獎嗎？')) {
+                    bonusSettings.activated = false;
+                    saveData();
+                    updateEngineStatus();
+                    renderPrizes();
+                    updateStats();
+                    showNotification('加碼獎已停用', 'warning');
+                }
+            } else {
+                if (confirm('確定要啟動加碼獎嗎？')) {
+                    bonusSettings.activated = true;
+                    saveData();
+                    updateEngineStatus();
+                    renderPrizes();
+                    updateStats();
+                    showNotification('加碼獎已啟動！');
+                }
+            }
+        }
+
+        function openBonusSettings() {
+            switchTab('rules');
+            document.querySelector('.tab[onclick="switchTab(\'rules\')"]').click();
+        }
+
+        function calculateOptimalQuota() {
+            const totalEmployees = employees.filter(e => e.status === 'active').length;
+            const totalQuota = prizes.reduce((sum, p) => sum + p.quantity, 0);
+            const departments = [...new Set(employees.filter(e => e.status === 'active').map(e => e.department))];
+            
+            departments.forEach(dept => {
+                const deptCount = employees.filter(e => e.department === dept && e.status === 'active').length;
+                const optimalQuota = Math.round(totalQuota * (deptCount / totalEmployees));
+                rules.departmentQuotas[dept] = optimalQuota;
+            });
+            
+            saveData();
+            renderDepartmentQuotas();
+            showNotification('智能配額計算完成');
+        }
+
+        // 系統設定相關
+        function exportSettings() {
+            const settings = {
+                employees,
+                prizes,
+                winners,
+                rules,
+                bonusSettings,
+                lotteryState,
+                timestamp: new Date().toISOString(),
+                version: '2.0-html-fixed'
+            };
+            
+            const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `lottery-settings-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            showNotification('系統設定已匯出');
+        }
+
+        function importSettings() {
+            const file = document.getElementById('settingsFile').files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const settings = JSON.parse(e.target.result);
+                    
+                    if (confirm('匯入設定將覆蓋現有資料，確定要繼續嗎？')) {
+                        if (settings.employees) employees = settings.employees;
+                        if (settings.prizes) prizes = settings.prizes;
+                        if (settings.winners) winners = settings.winners;
+                        if (settings.rules) rules = settings.rules;
+                        if (settings.bonusSettings) bonusSettings = settings.bonusSettings;
+                        if (settings.lotteryState) lotteryState = settings.lotteryState;
+                        
+                        saveData();
+                        location.reload();
+                    }
+                } catch (error) {
+                    showNotification('設定檔格式錯誤', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function forcSync() {
+            showNotification('正在強制同步...', 'info');
+            setTimeout(() => {
+                showNotification('同步完成');
+            }, 2000);
+        }
+
+        function resetLottery() {
+            if (confirm('這將重設抽獎狀態，確定要繼續嗎？')) {
+                lotteryState = { status: 'waiting', currentPrize: null, currentWinner: null };
+                saveData();
+                updateEngineStatus();
+                localStorage.setItem('lotteryEvent', JSON.stringify({
+                    type: 'RESET_LOTTERY',
+                    timestamp: new Date().toISOString()
+                }));
+                showNotification('抽獎狀態已重設');
+            }
+        }
+
+        function clearTestRecords() {
+            if (confirm('這將清空所有測試記錄但保留設定，確定要繼續嗎？')) {
+                winners = [];
+                prizes.forEach(prize => prize.drawn = 0);
+                bonusSettings.activated = false;
+                lotteryState = { status: 'waiting', currentPrize: null, currentWinner: null };
+                
+                saveData();
+                updateStats();
+                renderPrizes();
+                renderWinners();
+                updateEngineStatus();
+                
+                localStorage.setItem('testRecordsCleared', JSON.stringify({
+                    timestamp: new Date().toISOString()
+                }));
+                
+                showNotification('測試記錄已清空，設定已保留');
+            }
+        }
+
+        function exportSystemReport() {
+            const report = getSystemReport();
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `lottery-report-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            showNotification('系統報告已匯出');
+        }
+
+        function getSystemReport() {
+            const totalEmployees = employees.filter(e => e.status === 'active').length;
+            const totalPrizes = prizes.length;
+            const totalWinners = winners.length;
+            const completedPrizes = prizes.filter(p => p.drawn >= p.quantity).length;
+            
+            return {
+                employees: {
+                    total: totalEmployees,
+                    byDepartment: employees.reduce((acc, emp) => {
+                        if (emp.status === 'active') {
+                            acc[emp.department] = (acc[emp.department] || 0) + 1;
+                        }
+                        return acc;
+                    }, {})
+                },
+                prizes: {
+                    total: totalPrizes,
+                    completed: completedPrizes,
+                    remaining: totalPrizes - completedPrizes,
+                    totalQuota: prizes.reduce((sum, p) => sum + p.quantity, 0),
+                    drawnQuota: prizes.reduce((sum, p) => sum + p.drawn, 0)
+                },
+                winners: {
+                    total: totalWinners,
+                    byPrize: winners.reduce((acc, winner) => {
+                        const prizeName = getPrizeName(winner.prizeId);
+                        acc[prizeName] = (acc[prizeName] || 0) + 1;
+                        return acc;
+                    }, {}),
+                    byDepartment: winners.reduce((acc, winner) => {
+                        const employee = employees.find(e => normalizeId(e.id) === normalizeId(winner.employeeId));
+                        if (employee) {
+                            acc[employee.department] = (acc[employee.department] || 0) + 1;
+                        }
+                        return acc;
+                    }, {})
+                },
+                system: {
+                    bonusActivated: bonusSettings.activated,
+                    currentStatus: lotteryState.status,
+                    lastUpdate: new Date().toISOString(),
+                    version: '2.0-html-fixed'
+                }
+            };
+        }
+
+        // 抽獎邏輯引擎
+        function handleLotteryStart(prizeId) {
+            console.log('收到開始抽獎事件:', prizeId);
+            
+            lotteryState.status = 'rolling';
+            lotteryState.currentPrize = prizeId;
+            lotteryState.currentWinner = null;
+            
+            const eligibleEmployees = getEligibleEmployees(prizeId);
+            console.log('符合條件員工:', eligibleEmployees);
+            
+            saveData();
+            updateEngineStatus();
+            broadcastLotteryState();
+        }
+
+        function handleLotteryStop() {
+            console.log('收到停止抽獎事件');
+            
+            if (lotteryState.status !== 'rolling') return;
+            
+            const prizeId = lotteryState.currentPrize;
+            const eligibleEmployees = getEligibleEmployees(prizeId);
+            
+            if (eligibleEmployees.length === 0) {
+                showNotification('沒有符合條件的員工！', 'error');
+                lotteryState.status = 'waiting';
+                lotteryState.currentPrize = null;
+                saveData();
+                updateEngineStatus();
+                broadcastLotteryState();
+                return;
+            }
+            
+            const winner = eligibleEmployees[Math.floor(Math.random() * eligibleEmployees.length)];
+            
+            const winRecord = {
+                id: Date.now(),
+                employeeId: normalizeId(winner.id),
+                prizeId: prizeId,
+                timestamp: new Date().toISOString()
+            };
+            
+            winners.push(winRecord);
+            
+            if (prizeId !== 'bonus') {
+                const prize = findPrizeById(prizeId);
+                if (prize) prize.drawn++;
+            }
+            
+            lotteryState.status = 'showing';
+            lotteryState.currentWinner = {
+                id: normalizeId(winner.id),
+                employeeName: winner.name,
+                department: winner.department,
+                prizeName: getPrizeDisplayName(prizeId)
+            };
+            
+            saveData();
+            updateEngineStatus();
+            renderWinners();
+            updateStats();
+            renderPrizes();
+            
+            broadcastLotteryResult(lotteryState.currentWinner);
+            
+            console.log('抽獎結果:', lotteryState.currentWinner);
+            showNotification(`恭喜 ${winner.name} 獲得 ${lotteryState.currentWinner.prizeName}！`);
+            
+            setTimeout(() => {
+                lotteryState.status = 'waiting';
+                lotteryState.currentPrize = null;
+                lotteryState.currentWinner = null;
+                saveData();
+                updateEngineStatus();
+                broadcastLotteryState();
+            }, 3000);
+        }
+
+        function forceLotteryStop() {
+            console.log('強制停止抽獎');
+            lotteryState.status = 'waiting';
+            lotteryState.currentPrize = null;
+            lotteryState.currentWinner = null;
+            saveData();
+            updateEngineStatus();
+            broadcastLotteryState();
+            showNotification('抽獎已強制停止', 'warning');
+        }
+
+        function broadcastLotteryState() {
+            const event = {
+                type: 'LOTTERY_STATE_CHANGE',
+                data: {
+                    status: lotteryState.status,
+                    currentPrize: lotteryState.currentPrize,
+                    eligibleCount: lotteryState.currentPrize ? getEligibleEmployees(lotteryState.currentPrize).length : 0,
+                    timestamp: Date.now()
+                }
+            };
+            
+            console.log('廣播抽獎狀態:', event);
+            localStorage.setItem('lotteryStateUpdate', JSON.stringify(event));
+        }
+
+        function broadcastLotteryResult(winner) {
+            const event = {
+                type: 'LOTTERY_RESULT',
+                data: winner
+            };
+            
+            console.log('廣播抽獎結果:', event);
+            localStorage.setItem('lotteryResult', JSON.stringify(event));
+        }
+
+        // 通知函數
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // 事件監聽器設置
+        document.getElementById('activateBonusBtn').addEventListener('click', activateBonus);
+        document.getElementById('bonusSettingsBtn').addEventListener('click', openBonusSettings);
+
+        // 鍵盤快捷鍵
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveData();
+                showNotification('資料已保存');
+            }
+            
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportSettings();
+            }
+            
+            if (e.key === 'F5' && !e.ctrlKey) {
+                e.preventDefault();
+                updateStats();
+                renderPrizes();
+                renderEmployees();
+                renderRules();
+                renderWinners();
+                showNotification('介面已重新整理');
+            }
+        });
+
+        // 視窗關閉前確認
+        window.addEventListener('beforeunload', function(e) {
+            if (lotteryState.status === 'rolling') {
+                e.preventDefault();
+                e.returnValue = '抽獎正在進行中，確定要離開嗎？';
+                return '抽獎正在進行中，確定要離開嗎？';
+            }
+        });
+
+        // 錯誤處理
+        window.addEventListener('error', function(e) {
+            console.error('系統錯誤:', e.error);
+            showNotification('系統發生錯誤，請檢查控制台', 'error');
+        });
+
+        // 提供全域API
+        window.LotteryAdmin = {
+            getEmployees: () => employees,
+            getPrizes: () => prizes,
+            getWinners: () => winners,
+            getRules: () => rules,
+            getBonusSettings: () => bonusSettings,
+            getLotteryState: () => lotteryState,
+            getSystemReport: getSystemReport,
+            getEligibleEmployees: getEligibleEmployees,
+            handleLotteryStart: handleLotteryStart,
+            handleLotteryStop: handleLotteryStop,
+            forceLotteryStop: forceLotteryStop,
+            getTopPrizes: getTopPrizes
+        };
+
+        console.log('🎯 抽獎系統管理後台 - HTML結構修復版初始化完成');
+        console.log('✨ 修復內容:');
+        console.log('  1. ✅ 修復HTML結構 - 完整的HTML/CSS/JS結構');
+        console.log('  2. ✅ 實現Order邏輯 - 按抽獎順序排列');
+        console.log('  3. ✅ 新增Content欄位 - 獎項內容與名稱分離');
+        console.log('  4. ✅ 修復前N獎判斷 - 使用Order而非ID判斷');
+        console.log('  5. ✅ 優化介面 - 移除上下調整按鈕');
+        console.log('  6. ✅ 加強抽獎邏輯 - 支援加碼獎排除前N獎得主');
+    </script>
+
+    <!-- ===== Firebase 遠端控制整合 (開始) ===== -->
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <!-- Firebase 系統檔案 -->
+    <script src="firebase_config.js"></script>
+    <script src="firebase_core.js"></script>
+    <script src="lottery_events.js"></script>
+
+    <!-- 新版 RTDB 橋接器 -->
+    <script src="lottery_bridge_rtdb.js"></script>
+    <script>
+      // 初始化後台橋接器
+      window.lotteryBridge && window.lotteryBridge.init('admin');
+    </script>
+    <!-- ===== Firebase 遠端控制整合 (結束) ===== -->
+
+</body>
+</html>

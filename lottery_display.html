@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 抽獎大螢幕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* 標題區域 */
+        .title-section {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main-title {
+            font-size: 4em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: rgba(255,255,255,0.9);
+            font-weight: 300;
+        }
+
+        /* 獎項資訊 */
+        .prize-section {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            border-radius: 25px;
+            padding: 40px 60px;
+            margin-bottom: 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.5s ease;
+            display: none;
+        }
+
+        .prize-section.show {
+            transform: scale(1);
+            opacity: 1;
+            display: block;
+        }
+
+        .prize-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .prize-quantity {
+            font-size: 1.1em;
+            color: #7f8c8d;
+        }
+
+        /* 抽獎區域 */
+        .lottery-section {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+        }
+
+        .name-display {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .name-display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(52, 152, 219, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+        }
+
+        .rolling .name-display::before {
+            animation: shine 0.8s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .current-name {
+            font-size: 4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .rolling .current-name {
+            animation: nameRoll 0.1s ease-in-out infinite;
+        }
+
+        @keyframes nameRoll {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .current-details {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 獲獎者顯示 */
+        .winner-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            z-index: 50;
+        }
+
+        .winner-section.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .winner-announcement {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            animation: bounce 1s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .winner-name {
+            font-size: 5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.3); }
+            to { text-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 30px rgba(255,255,255,0.6); }
+        }
+
+        .winner-prize {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .winner-details {
+            font-size: 1.5em;
+            opacity: 0.8;
+        }
+
+        /* 煙火效果 */
+        .fireworks {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        @keyframes fireworkExplode {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* 狀態指示 */
+        .status-indicator {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 90;
+        }
+
+        .status-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 漸變背景動畫 */
+        .gradient-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                rgba(255,0,150,0.1) 0%,
+                rgba(0,255,255,0.1) 25%,
+                rgba(255,255,0,0.1) 50%,
+                rgba(255,0,255,0.1) 75%,
+                rgba(0,255,0,0.1) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 10s ease infinite;
+            opacity: 0;
+            transition: opacity 2s;
+            z-index: 1;
+        }
+
+        .gradient-bg.active {
+            opacity: 1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 狀態列 */
+        .status-bar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            z-index: 100;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-bar:hover {
+            opacity: 1;
+        }
+
+        .status-bar.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1024px) {
+            .main-title { font-size: 3em; }
+            .current-name { font-size: 3em; }
+            .winner-name { font-size: 4em; }
+            .prize-title { font-size: 2em; }
+        }
+
+        @media (max-width: 768px) {
+            .main-title { font-size: 2.5em; }
+            .current-name { font-size: 2.5em; }
+            .winner-name { font-size: 3em; }
+            .prize-title { font-size: 1.8em; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 漸變背景 -->
+    <div class="gradient-bg" id="gradientBg"></div>
+
+    <!-- 狀態列 -->
+    <div class="status-bar" id="statusBar">
+        連接狀態: <span id="connectionStatus">已連接</span>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 標題區域 -->
+        <div class="title-section" id="titleSection">
+            <h1 class="main-title">🎯 抽獎大螢幕</h1>
+            <p class="subtitle">等待開始抽獎...</p>
+        </div>
+
+        <!-- 獎項資訊 -->
+        <div class="prize-section" id="prizeSection">
+            <div class="prize-title" id="prizeTitle">準備中...</div>
+            <div class="prize-quantity" id="prizeQuantity"></div>
+        </div>
+
+        <!-- 抽獎區域 -->
+        <div class="lottery-section" id="lotterySection">
+            <div class="name-display" id="nameDisplay">
+                <div class="current-name" id="currentName">🎲</div>
+                <div class="current-details" id="currentDetails">等待手機控制指令</div>
+            </div>
+        </div>
+
+        <!-- 獲獎者展示 -->
+        <div class="winner-section" id="winnerSection">
+            <div class="fireworks" id="fireworks"></div>
+            <div class="winner-announcement">🎉 恭喜獲獎 🎉</div>
+            <div class="winner-name" id="winnerName"></div>
+            <div class="winner-prize" id="winnerPrize"></div>
+            <div class="winner-details" id="winnerDetails"></div>
+        </div>
+    </div>
+
+    <!-- 狀態指示器 -->
+    <div class="status-indicator" id="statusIndicator"></div>
+
+    <script>
+        // 全局變數
+        let employees = [];
+        let lotteryState = { status: 'waiting', currentPrize: null, currentWinner: null };
+        let rollingInterval = null;
+        let statusBarTimer = null;
+        let mouseTimer = null;
+
+        // 初始化
+        function init() {
+            console.log('🎯 抽獎大螢幕已載入');
+            loadEmployees();
+            setupEventListeners();
+            updateDisplay();
+            showStatusMessage('大螢幕已就緒', 3000);
+        }
+
+        // 載入員工資料
+        function loadEmployees() {
+            try {
+                const storedEmployees = JSON.parse(localStorage.getItem('employees') || '[]');
+                employees = storedEmployees.filter(emp => emp.status === 'active');
+                console.log('載入員工資料:', employees.length, '人');
+            } catch (error) {
+                console.error('載入員工資料失敗:', error);
+                employees = [];
+            }
+        }
+
+        // 設定事件監聽器
+        function setupEventListeners() {
+            console.log('設定大螢幕事件監聽器...');
+            
+            // 監聽 localStorage 變化
+            window.addEventListener('storage', function(e) {
+                console.log('大螢幕收到storage事件:', e.key);
+                
+                try {
+                    if (e.key === 'lotteryEvent') {
+                        const event = JSON.parse(e.newValue || '{}');
+                        console.log('收到抽獎事件:', event);
+                        handleLotteryEvent(event);
+                    }
+                    if (e.key === 'lotteryState') {
+                        const newState = JSON.parse(e.newValue || '{"status": "waiting"}');
+                        console.log('收到狀態變化:', newState);
+                        handleStateChange(newState);
+                    }
+                    if (e.key === 'employees') {
+                        console.log('員工資料更新');
+                        loadEmployees();
+                    }
+                    if (e.key === 'lotteryResult') {
+                        const event = JSON.parse(e.newValue || '{}');
+                        console.log('收到抽獎結果:', event);
+                        if (event.type === 'LOTTERY_RESULT' && event.data) {
+                            showWinner(event.data);
+                        }
+                    }
+                    if (e.key === 'testRecordsCleared') {
+                        console.log('收到測試記錄清空通知');
+                        resetDisplay();
+                    }
+                } catch (error) {
+                    console.error('事件處理錯誤:', error);
+                }
+            });
+
+            // 鍵盤控制
+            document.addEventListener('keydown', (e) => {
+                switch (e.code) {
+                    case 'KeyH':
+                        e.preventDefault();
+                        toggleStatusBar();
+                        break;
+                    case 'KeyF':
+                        e.preventDefault();
+                        toggleFullscreen();
+                        break;
+                    case 'KeyR':
+                        e.preventDefault();
+                        reconnect();
+                        break;
+                    case 'KeyD':
+                        // D鍵顯示調試資訊
+                        e.preventDefault();
+                        console.log('=== 大螢幕調試資訊 ===');
+                        console.log('員工數量:', employees.length);
+                        console.log('抽獎狀態:', lotteryState);
+                        console.log('滾動狀態:', !!rollingInterval);
+                        showStatusMessage('調試資訊已輸出到控制台', 2000);
+                        break;
+                }
+            });
+
+            // 滑鼠移動控制
+            document.addEventListener('mousemove', () => {
+                showCursor();
+            });
+        }
+
+        // 處理抽獎事件
+        function handleLotteryEvent(event) {
+            switch (event.type) {
+                case 'START_LOTTERY':
+                    startLotteryDisplay(event.prizeId);
+                    break;
+                case 'STOP_LOTTERY':
+                    // 等待結果
+                    break;
+                case 'FORCE_STOP':
+                case 'EMERGENCY_RESET':
+                    resetDisplay();
+                    break;
+            }
+        }
+
+        // 處理狀態變化
+        function handleStateChange(newState) {
+            lotteryState = newState;
+            updateDisplay();
+        }
+
+        // 開始抽獎顯示
+        function startLotteryDisplay(prizeId) {
+            lotteryState.status = 'rolling';
+            lotteryState.currentPrize = prizeId;
+            
+            showCurrentPrize(prizeId);
+            startRolling();
+            showStatusMessage('抽獎開始！', 2000);
+        }
+
+        // 顯示當前獎項
+        function showCurrentPrize(prizeId) {
+            const titleSection = document.getElementById('titleSection');
+            const prizeSection = document.getElementById('prizeSection');
+            const prizeTitle = document.getElementById('prizeTitle');
+            const prizeQuantity = document.getElementById('prizeQuantity');
+            
+            let prizeName = '';
+            let prizeInfo = '';
+            
+            if (prizeId === 'bonus') {
+                prizeName = '加碼獎';
+                const bonusSettings = JSON.parse(localStorage.getItem('bonusSettings') || '{}');
+                prizeInfo = `名額: ${bonusSettings.quantity || 2}`;
+            } else {
+                const prizes = JSON.parse(localStorage.getItem('prizes') || '[]');
+                const prize = prizes.find(p => p.id === parseInt(prizeId));
+                if (prize) {
+                    prizeName = prize.name;
+                    prizeInfo = `名額: ${prize.quantity} | 剩餘: ${prize.quantity - prize.drawn}`;
+                }
+            }
+            
+            prizeTitle.textContent = prizeName;
+            prizeQuantity.textContent = prizeInfo;
+            
+            titleSection.style.display = 'none';
+            prizeSection.classList.add('show');
+        }
+
+        // 開始滾動
+        function startRolling() {
+            if (employees.length === 0) {
+                showStatusMessage('沒有員工資料', 3000);
+                return;
+            }
+            
+            const nameDisplay = document.getElementById('nameDisplay');
+            const currentName = document.getElementById('currentName');
+            const currentDetails = document.getElementById('currentDetails');
+            const gradientBg = document.getElementById('gradientBg');
+            
+            nameDisplay.classList.add('rolling');
+            gradientBg.classList.add('active');
+            
+            rollingInterval = setInterval(() => {
+                const randomEmployee = employees[Math.floor(Math.random() * employees.length)];
+                currentName.textContent = randomEmployee.name;
+                currentDetails.textContent = randomEmployee.department || '';
+            }, 100);
+        }
+
+        // 停止滾動
+        function stopRolling() {
+            if (rollingInterval) {
+                clearInterval(rollingInterval);
+                rollingInterval = null;
+            }
+            
+            const nameDisplay = document.getElementById('nameDisplay');
+            const gradientBg = document.getElementById('gradientBg');
+            
+            nameDisplay.classList.remove('rolling');
+            gradientBg.classList.remove('active');
+        }
+
+        // 顯示獲獎者
+        function showWinner(winner) {
+            stopRolling();
+            
+            const winnerSection = document.getElementById('winnerSection');
+            const winnerName = document.getElementById('winnerName');
+            const winnerPrize = document.getElementById('winnerPrize');
+            const winnerDetails = document.getElementById('winnerDetails');
+            
+            winnerName.textContent = winner.employeeName || winner.name;
+            winnerPrize.textContent = winner.prizeName;
+            winnerDetails.textContent = winner.department;
+            
+            winnerSection.classList.add('show');
+            createFireworks();
+            
+            showStatusMessage(`🎉 ${winner.employeeName || winner.name} 獲得 ${winner.prizeName}`, 8000);
+            
+            // 10秒後自動隱藏（延長到10秒）
+            setTimeout(() => {
+                hideWinner();
+            }, 10000);
+        }
+
+        // 隱藏獲獎者
+        function hideWinner() {
+            const winnerSection = document.getElementById('winnerSection');
+            winnerSection.classList.remove('show');
+            
+            // 清除煙火
+            document.getElementById('fireworks').innerHTML = '';
+            
+            // 重置到等待狀態
+            setTimeout(() => {
+                resetToWaiting();
+            }, 500);
+        }
+
+        // 重置到等待狀態
+        function resetToWaiting() {
+            const titleSection = document.getElementById('titleSection');
+            const prizeSection = document.getElementById('prizeSection');
+            const currentName = document.getElementById('currentName');
+            const currentDetails = document.getElementById('currentDetails');
+            
+            titleSection.style.display = 'block';
+            prizeSection.classList.remove('show');
+            
+            currentName.textContent = '🎲';
+            currentDetails.textContent = '等待手機控制指令';
+            
+            document.querySelector('.subtitle').textContent = '等待開始抽獎...';
+        }
+
+        // 煙火效果
+        function createFireworks() {
+            const fireworksContainer = document.getElementById('fireworks');
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4ecdc4', '#45b7d1', '#96ceb4'];
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.left = Math.random() * 100 + '%';
+                    firework.style.top = Math.random() * 100 + '%';
+                    firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.animation = 'fireworkExplode 1s ease-out forwards';
+                    
+                    fireworksContainer.appendChild(firework);
+                    
+                    setTimeout(() => {
+                        if (firework.parentNode) {
+                            firework.parentNode.removeChild(firework);
+                        }
+                    }, 1000);
+                }, i * 50);
+            }
+        }
+
+        // 重置顯示
+        function resetDisplay() {
+            stopRolling();
+            hideWinner();
+            resetToWaiting();
+            showStatusMessage('系統已重置', 3000);
+        }
+
+        // 更新顯示
+        function updateDisplay() {
+            // 根據狀態更新顯示
+            switch (lotteryState.status) {
+                case 'waiting':
+                    resetToWaiting();
+                    break;
+                case 'rolling':
+                    if (lotteryState.currentPrize && !rollingInterval) {
+                        startLotteryDisplay(lotteryState.currentPrize);
+                    }
+                    break;
+                case 'showing':
+                    if (lotteryState.currentWinner) {
+                        showWinner(lotteryState.currentWinner);
+                    }
+                    break;
+            }
+        }
+
+        // 狀態訊息
+        function showStatusMessage(message, duration = 3000) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = message;
+            indicator.classList.add('show');
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, duration);
+        }
+
+        // 狀態列控制
+        function toggleStatusBar() {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.classList.toggle('hidden');
+        }
+
+        // 全螢幕控制
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    showStatusMessage('已進入全螢幕', 2000);
+                }).catch(() => {
+                    showStatusMessage('無法進入全螢幕', 2000);
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    showStatusMessage('已退出全螢幕', 2000);
+                });
+            }
+        }
+
+        // 重新連接
+        function reconnect() {
+            loadEmployees();
+            const newState = JSON.parse(localStorage.getItem('lotteryState') || '{"status": "waiting"}');
+            handleStateChange(newState);
+            showStatusMessage('已重新連接', 2000);
+        }
+
+        // 顯示游標
+        function showCursor() {
+            document.body.style.cursor = 'default';
+            
+            if (mouseTimer) {
+                clearTimeout(mouseTimer);
+            }
+            
+            mouseTimer = setTimeout(() => {
+                document.body.style.cursor = 'none';
+            }, 2000);
+        }
+
+        // 頁面載入完成
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 處理網路狀態
+        window.addEventListener('online', () => {
+            document.getElementById('connectionStatus').textContent = '已連接';
+            showStatusMessage('網路已恢復', 2000);
+        });
+
+        window.addEventListener('offline', () => {
+            document.getElementById('connectionStatus').textContent = '已中斷';
+            showStatusMessage('網路中斷，繼續運行', 3000);
+        });
+
+        // 防止右鍵和選取
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+
+        // 清理資源
+        window.addEventListener('beforeunload', () => {
+            if (rollingInterval) {
+                clearInterval(rollingInterval);
+            }
+            if (statusBarTimer) {
+                clearTimeout(statusBarTimer);
+            }
+            if (mouseTimer) {
+                clearTimeout(mouseTimer);
+            }
+        });
+
+        console.log('🎯 抽獎大螢幕已初始化');
+        console.log('⚡ 快捷鍵: H-狀態列 | F-全螢幕 | R-重連');
+    </script>
+
+    <!-- ===== Firebase 遠端控制整合 (開始) ===== -->
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <!-- Firebase 系統檔案 -->
+    <script src="firebase_config.js"></script>
+    <script src="firebase_core.js"></script>
+    <script src="lottery_events.js"></script>
+
+    <!-- 新版 RTDB 橋接器 -->
+    <script src="lottery_bridge_rtdb.js"></script>
+    <script>
+        // 顯示頁目前只需要保持原本行為
+        window.lotteryBridge && window.lotteryBridge.init('display');
+    </script>
+    <!-- ===== Firebase 遠端控制整合 (結束) ===== -->
+
+</body>
+</html>
